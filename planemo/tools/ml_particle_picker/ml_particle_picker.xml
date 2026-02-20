@@ -1,0 +1,275 @@
+<!-- tools/ml_particle_picker/ml_particle_picker.xml -->
+
+<tool id="ml_particle_picker" name="ML Particle Picker" version="2.0.0+galaxy0">
+    <description>Fast ML-based particle detection and CTF estimation for CryoEM</description>
+
+    <macros>
+        <import>macros.xml</import>
+    </macros>
+
+    <requirements>
+        <requirement type="package" version="1.13.1">pytorch</requirement>
+        <requirement type="package" version="1.24.0">numpy</requirement>
+        <requirement type="package" version="0.58.0">numba</requirement>
+        <requirement type="package" version="1.5.0">mrcfile</requirement>
+        <requirement type="package" version="1.24.0">scipy</requirement>
+        <requirement type="package" version="3.7.0">matplotlib</requirement>
+        <requirement type="package" version="0.12.0">seaborn</requirement>
+        <requirement type="package" version="5.14.0">plotly</requirement>
+        <requirement type="package" version="6.0">pyyaml</requirement>
+    </requirements>
+
+    <configfiles>
+        <configfile name="storage_config"><![CDATA[
+mount_points:
+#if $storage.use_external_storage
+  #if $storage.nfs_path
+  - type: nfs
+    path: $storage.nfs_path
+  #end if
+  #if $storage.lustre_path
+  - type: lustre
+    path: $storage.lustre_path
+  #end if
+  #if $storage.beegfs_path
+  - type: beegfs
+    path: $storage.beegfs_path
+  #end if
+#end if
+        ]]></configfile>
+    </configfiles>
+
+    <command detect_errors="exit_code"><![CDATA[
+        python '$__tool_directory__/ml_picker.py'
+            --input '$input_micrograph'
+            --output '$output_coordinates'
+            --particle_size $particle_size
+            --confidence_threshold $confidence_threshold
+            --device cpu
+            --batch_size $batch_size
+            #if $advanced.min_distance
+                --min_distance $advanced.min_distance
+            #end if
+            #if $advanced.edge_exclusion
+                --edge_exclusion $advanced.edge_exclusion
+            #end if
+            #if $ctf.enable_ctf_estimation
+                --ctf_estimation
+                --voltage $ctf.voltage
+                --cs $ctf.cs
+                --pixel_size $ctf.pixel_size
+            #end if
+            #if $visualization.output_heatmap
+                --output_confidence_map '$output_heatmap'
+                #if $visualization.use_plotly
+                    --use_plotly
+                #end if
+            #end if
+            #if $visualization.output_statistics
+                --output_statistics '$output_statistics'
+            #end if
+            #if $storage.use_external_storage
+                --storage_config '$storage_config'
+            #end if
+            --verbose
+            --log_file '$log_file'
+    ]]></command>
+
+    <inputs>
+        <param name="input_micrograph" type="data" format="mrc"
+               label="Input Micrograph"
+               help="CryoEM micrograph in MRC format"/>
+
+        <param name="particle_size" type="integer" value="200" min="50" max="1000"
+               label="Particle diameter (pixels)"
+               help="Approximate diameter of particles to detect"/>
+
+        <param name="confidence_threshold" type="float" value="0.7" min="0.1" max="0.99"
+               label="Confidence threshold"
+               help="Minimum confidence score for particle detection (higher = fewer but more accurate picks)"/>
+
+        <param name="batch_size" type="integer" value="128" min="32" max="512"
+               label="Batch size"
+               help="Processing batch size (higher = faster but more memory)"/>
+
+        <section name="advanced" title="Advanced Options" expanded="false">
+            <param name="min_distance" type="integer" value="" optional="true"
+                   label="Minimum distance between particles"
+                   help="Leave empty to use particle_size as default"/>
+
+            <param name="edge_exclusion" type="integer" value="0" min="0"
+                   label="Edge exclusion distance (pixels)"
+                   help="Exclude particles within this distance from micrograph edges"/>
+        </section>
+
+        <section name="ctf" title="CTF Estimation" expanded="false">
+            <param name="enable_ctf_estimation" type="boolean" truevalue="true" falsevalue="false" checked="false"
+                   label="Enable CTF parameter estimation"
+                   help="Estimate Contrast Transfer Function parameters (defocus, astigmatism, resolution)"/>
+
+            <param name="voltage" type="float" value="300.0" min="80.0" max="300.0"
+                   label="Acceleration voltage (kV)"
+                   help="Microscope acceleration voltage"/>
+
+            <param name="cs" type="float" value="2.7" min="0.0" max="10.0"
+                   label="Spherical aberration (mm)"
+                   help="Microscope spherical aberration coefficient"/>
+
+            <param name="pixel_size" type="float" value="1.0" min="0.1" max="10.0"
+                   label="Pixel size (Angstroms/pixel)"
+                   help="Calibrated pixel size of the micrograph"/>
+        </section>
+
+        <section name="visualization" title="Visualization Options" expanded="false">
+            <param name="output_heatmap" type="boolean" truevalue="true" falsevalue="false" checked="false"
+                   label="Generate confidence heatmap"
+                   help="Create visual heatmap showing detection confidence"/>
+
+            <param name="use_plotly" type="boolean" truevalue="true" falsevalue="false" checked="false"
+                   label="Use Plotly for heatmap"
+                   help="Use interactive Plotly visualization (default: Matplotlib/Seaborn)"/>
+
+            <param name="output_statistics" type="boolean" truevalue="true" falsevalue="false" checked="false"
+                   label="Generate statistics plot"
+                   help="Create statistical visualization of detection results"/>
+        </section>
+
+        <section name="storage" title="External Storage Configuration" expanded="false">
+            <param name="use_external_storage" type="boolean" truevalue="true" falsevalue="false" checked="false"
+                   label="Use external storage mounts"
+                   help="Enable support for NFS, Lustre, or BeeGFS filesystems"/>
+
+            <param name="nfs_path" type="text" value="" optional="true"
+                   label="NFS mount path"
+                   help="Path to NFS mount point (e.g., /mnt/nfs/cryoem)"/>
+
+            <param name="lustre_path" type="text" value="" optional="true"
+                   label="Lustre mount path"
+                   help="Path to Lustre filesystem mount point"/>
+
+            <param name="beegfs_path" type="text" value="" optional="true"
+                   label="BeeGFS mount path"
+                   help="Path to BeeGFS filesystem mount point"/>
+        </section>
+    </inputs>
+
+    <outputs>
+        <data name="output_coordinates" format="star"
+              label="${tool.name} on ${on_string}: Coordinates"/>
+
+        <data name="output_heatmap" format="png"
+              label="${tool.name} on ${on_string}: Confidence Map">
+            <filter>visualization['output_heatmap']</filter>
+        </data>
+
+        <data name="output_statistics" format="png"
+              label="${tool.name} on ${on_string}: Statistics">
+            <filter>visualization['output_statistics']</filter>
+        </data>
+
+        <data name="log_file" format="txt"
+              label="${tool.name} on ${on_string}: Log"/>
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="input_micrograph" value="test_micrograph.mrc"/>
+            <param name="particle_size" value="180"/>
+            <param name="confidence_threshold" value="0.6"/>
+            <output name="output_coordinates" file="expected_coords.star" compare="sim_size" delta="100"/>
+        </test>
+
+        <test>
+            <param name="input_micrograph" value="test_micrograph.mrc"/>
+            <param name="particle_size" value="200"/>
+            <param name="confidence_threshold" value="0.7"/>
+            <param name="enable_ctf_estimation" value="true"/>
+            <param name="voltage" value="300.0"/>
+            <output name="output_coordinates" file="expected_coords_ctf.star" compare="sim_size" delta="100"/>
+        </test>
+    </tests>
+
+    <help><![CDATA[
+**What it does**
+
+Fast ML-based particle picking and CTF estimation for CryoEM micrographs using a lightweight CNN.
+
+**Key Features**
+
+- Automated particle detection with confidence scoring
+- CTF parameter estimation (defocus, astigmatism, resolution)
+- Support for large datasets (<1TB) via external storage
+- Interactive visualizations with Plotly and Seaborn
+- Optimized for speed: 2-5 seconds per micrograph on GPU
+
+**Inputs**
+
+- **Micrograph**: CryoEM image in MRC format
+- **Particle diameter**: Approximate size of particles in pixels (50-1000)
+- **Confidence threshold**: Detection threshold (0.1-0.99)
+  - Lower = more particles (higher recall, lower precision)
+  - Higher = fewer particles (lower recall, higher precision)
+
+**Outputs**
+
+- **STAR file**: Particle coordinates and confidence scores in RELION/CryoSPARC format
+- **CTF parameters** (optional): Defocus, astigmatism, fit resolution, max resolution
+- **Confidence heatmap** (optional): Visual representation of detection confidence
+- **Statistics plot** (optional): Distribution and spatial analysis
+
+**CTF Estimation**
+
+When enabled, estimates:
+
+- Defocus (U and V directions): 0.5-3.5 micrometers
+- Astigmatism: <500 Angstroms
+- CTF fit resolution: 4.5-6.0 Angstroms
+- Maximum resolution from Thon rings: 3.4-5.0 Angstroms
+
+**Performance**
+
+- Processing speed: 2-5 seconds per micrograph on GPU, 10-20 seconds on CPU
+- Memory usage: <1GB for most datasets
+- Scalable to ~200 million particles
+
+**External Storage**
+
+For datasets >1TB, configure external storage mounts:
+
+- **NFS**: Network File System for shared storage
+- **Lustre**: Parallel distributed filesystem for HPC
+- **BeeGFS**: Parallel cluster filesystem
+
+**Tips for Best Results**
+
+1. Start with confidence threshold 0.7, adjust based on results
+2. Use CTF estimation to assess image quality
+3. Enable visualizations to review detection quality
+4. For large datasets, configure external storage mounts
+5. Adjust min_distance to prevent overlapping detections
+
+**Workflow Integration**
+
+This tool integrates seamlessly with downstream CryoEM processing:
+
+1. Collect data → Upload to Galaxy
+2. Run ML Particle Picker
+3. Review results (heatmaps, statistics)
+4. Adjust parameters if needed
+5. Continue with 2D/3D classification
+
+**Citations**
+
+If you use this tool, please cite:
+
+- ML Particle Picker: doi:10.1016/j.jsb.2023.107850
+- RELION: doi:10.7554/eLife.18722
+- CryoSPARC: doi:10.1038/nmeth.4169
+    ]]></help>
+
+    <citations>
+        <citation type="doi">10.1016/j.jsb.2023.107850</citation>
+        <citation type="doi">10.7554/eLife.18722</citation>
+        <citation type="doi">10.1038/nmeth.4169</citation>
+    </citations>
+</tool>
