@@ -1,0 +1,6 @@
+data_
+
+loop_
+_rlnCoordinateX
+_rlnCoordinateY
+_rlnAutopickFigureOfMerit
