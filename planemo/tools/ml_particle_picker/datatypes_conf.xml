@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<datatypes>
+    <registration>
+        <!-- CryoEM file formats -->
+        <datatype extension="mrc" type="galaxy.datatypes.binary:Binary" 
+                  mimetype="application/octet-stream" 
+                  display_in_upload="true"
+                  description="MRC format - Medical Research Council electron microscopy image format"/>
+        
+        <datatype extension="mrcs" type="galaxy.datatypes.binary:Binary" 
+                  mimetype="application/octet-stream" 
+                  display_in_upload="true"
+                  description="MRCS format - MRC stack (multiple images)"/>
+        
+        <datatype extension="st" type="galaxy.datatypes.binary:Binary" 
+                  mimetype="application/octet-stream" 
+                  display_in_upload="true"
+                  description="ST format - SerialEM tomogram (3D volume)"/>
+        
+        <datatype extension="mdoc" type="galaxy.datatypes.data:Text" 
+                  mimetype="text/plain" 
+                  display_in_upload="true"
+                  description="MDOC format - SerialEM metadata file"/>
+        
+        <!-- CryoEM output formats -->
+        <datatype extension="star" type="galaxy.datatypes.data:Text" 
+                  mimetype="text/plain" 
+                  display_in_upload="true"
+                  description="STAR format - RELION/CryoSPARC particle coordinates"/>
+    </registration>
+    
+    <sniffers>
+        <sniffer type="galaxy.datatypes.binary:Binary"/>
+    </sniffers>
+</datatypes>
