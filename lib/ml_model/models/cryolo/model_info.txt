@@ -1,0 +1,6 @@
+crYOLO PhosNet General Model
+Original: gmodel_phosnet_202005_N63_c17.h5
+Installed: /home/jatin-s-linux/cryoem-precision-tool/cryoEM_particle_picker/lib/ml_model/models/cryolo/gmodel_phosnet_202005_N63_c17.h5
+Size: 193.3 MB
+Architecture: PhosNet
+Installed: 2026-02-27T22:26:09.384534

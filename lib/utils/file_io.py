@@ -1,6 +1,6 @@
 """
 File I/O utilities for CryoEM Precision Tool
-STAR file writing, heatmap generation, and statistics plotting
+STAR file writing, advanced visualization, and statistics plotting
 """
 
 import numpy as np
@@ -11,7 +11,16 @@ matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from ..data_models import CTFParameters
+# Handle imports for both package and direct execution
+try:
+    from ..data_models import CTFParameters
+    from ..visualization import ParticleVisualizationSuite
+except ImportError:
+    # Fallback for direct execution
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent))
+    from data_models import CTFParameters
+    from visualization import ParticleVisualizationSuite
 
 
 def write_star_file(
@@ -311,3 +320,109 @@ def read_star_file(filepath: str) -> Tuple[np.ndarray, np.ndarray, Optional[dict
     confidences = np.array(confidences)
     
     return coords, confidences, ctf_data if ctf_data else None
+
+
+def create_advanced_visualizations(
+    micrograph: np.ndarray,
+    coords: np.ndarray,
+    confidences: np.ndarray,
+    output_dir: str,
+    filename: str = "micrograph",
+    particle_size: int = 200,
+    ctf_params: Optional[CTFParameters] = None
+) -> dict:
+    """
+    Create comprehensive visualization suite using the new standalone system.
+    
+    Args:
+        micrograph: Input micrograph
+        coords: Particle coordinates
+        confidences: Confidence scores
+        output_dir: Output directory
+        filename: Base filename
+        particle_size: Particle diameter
+        ctf_params: CTF parameters (optional)
+        
+    Returns:
+        Dictionary of created file paths
+    """
+    # Initialize visualization suite
+    viz_suite = ParticleVisualizationSuite(use_plotly=True, style='publication')
+    
+    output_files = {}
+    
+    # 1. Particle overlay
+    overlay_path = f"{output_dir}/{filename}_particle_overlay.png"
+    viz_suite.create_particle_overlay(
+        micrograph=micrograph,
+        coords=coords,
+        confidences=confidences,
+        output_path=overlay_path,
+        particle_size=particle_size,
+        title=f"Particle Detection - {filename}",
+        show_confidence=True,
+        colormap='viridis'
+    )
+    output_files['overlay'] = overlay_path
+    
+    # 2. Confidence analysis
+    confidence_path = f"{output_dir}/{filename}_confidence_analysis.png"
+    viz_suite.create_confidence_analysis(
+        coords=coords,
+        confidences=confidences,
+        output_path=confidence_path,
+        title=f"Confidence Analysis - {filename}"
+    )
+    output_files['confidence'] = confidence_path
+    
+    # 3. Quality report
+    report_path = f"{output_dir}/{filename}_quality_report.html"
+    ctf_dict = None
+    if ctf_params:
+        ctf_dict = {
+            'defocus_u': ctf_params.defocus_u,
+            'defocus_v': ctf_params.defocus_v,
+            'defocus_angle': ctf_params.defocus_angle,
+            'voltage': ctf_params.voltage,
+            'cs': ctf_params.cs,
+            'pixel_size': ctf_params.pixel_size,
+            'fit_resolution': ctf_params.fit_resolution,
+            'fit_quality': ctf_params.fit_quality
+        }
+    
+    viz_suite.create_quality_report(
+        micrograph=micrograph,
+        coords=coords,
+        confidences=confidences,
+        ctf_params=ctf_dict,
+        output_path=report_path,
+        filename=filename
+    )
+    output_files['report'] = report_path
+    
+    return output_files
+
+
+def create_batch_visualization_summary(
+    batch_results: list,
+    output_path: str,
+    title: str = "Batch Processing Summary"
+) -> str:
+    """
+    Create batch processing summary visualization.
+    
+    Args:
+        batch_results: List of batch processing results
+        output_path: Output file path
+        title: Plot title
+        
+    Returns:
+        Path to created summary
+    """
+    viz_suite = ParticleVisualizationSuite(use_plotly=True, style='publication')
+    
+    return viz_suite.create_batch_summary(
+        batch_results=batch_results,
+        output_path=output_path,
+        title=title
+    )

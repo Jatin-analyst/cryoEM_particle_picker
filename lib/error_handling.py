@@ -86,10 +86,10 @@ def validate_particle_size(particle_size: int) -> None:
     Raises:
         InputValidationError: If particle size is out of valid range
     """
-    if not 50 <= particle_size <= 1000:
+    if not 1 <= particle_size <= 300:
         raise InputValidationError(
             issue="Invalid particle diameter",
-            details=f"Particle diameter must be between 50 and 1000 pixels, got {particle_size}",
+            details=f"Particle diameter must be between 1 and 300 pixels, got {particle_size}",
             suggestion="Adjust the particle_size parameter to be within the valid range"
         )
 

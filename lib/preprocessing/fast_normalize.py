@@ -9,7 +9,14 @@ from pathlib import Path
 from typing import Tuple
 import numba
 
-from ..error_handling import InputValidationError, FileIOError
+# Handle imports for both package and direct execution
+try:
+    from ..error_handling import InputValidationError, FileIOError
+except ImportError:
+    # Fallback for direct execution
+    import sys
+    sys.path.append(str(Path(__file__).parent.parent))
+    from error_handling import InputValidationError, FileIOError
 
 
 def load_micrograph_mmap(filepath: str) -> np.ndarray:
