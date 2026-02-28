@@ -1,22 +1,16 @@
 <!-- tools/ml_particle_picker/ml_particle_picker.xml -->
 
-<tool id="cryoem_particle_picker" name="CryoEM Particle Picker" version="2.1.0+galaxy1">
+<tool id="cryoem_particle_picker" name="CryoEM Particle Picker" version="2.1.0+galaxy2">
     <description>crYOLO-based particle detection for CryoEM micrographs with 95%+ accuracy</description>
 
     <requirements>
-        <requirement type="package" version="3.10">python</requirement>
-        <!-- Core scientific computing (flexible versions for better conda compatibility) -->
-        <requirement type="package" version="1.24">numpy</requirement>
-        <requirement type="package" version="1.11">scipy</requirement>
-        <requirement type="package" version="0.20">scikit-image</requirement>
-        <!-- CryoEM file handling -->
-        <requirement type="package" version="1.5">mrcfile</requirement>
-        <!-- Visualization -->
-        <requirement type="package" version="3.8">matplotlib</requirement>
-        <!-- crYOLO dependencies (optional - tool works without these) -->
-        <requirement type="package" version="3.8">h5py</requirement>
-        <!-- TensorFlow is optional - tool has fallback detection -->
-        <!-- <requirement type="package" version="2.13">tensorflow</requirement> -->
+        <requirement type="package">python</requirement>
+        <requirement type="package">numpy</requirement>
+        <requirement type="package">scipy</requirement>
+        <requirement type="package">scikit-image</requirement>
+        <requirement type="package">mrcfile</requirement>
+        <requirement type="package">matplotlib</requirement>
+        <requirement type="package">h5py</requirement>
     </requirements>
 
     <command detect_errors="exit_code"><![CDATA[
