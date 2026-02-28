@@ -1,6 +1,6 @@
 <!-- tools/ml_particle_picker/ml_particle_picker.xml -->
 
-<tool id="cryoem_particle_picker" name="CryoEM Particle Picker" version="2.1.0+galaxy0">
+<tool id="cryoem_particle_picker" name="CryoEM Particle Picker" version="2.1.0+galaxy1">
     <description>crYOLO-based particle detection for CryoEM micrographs with 95%+ accuracy</description>
 
     <requirements>
