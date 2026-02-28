@@ -1,0 +1,26 @@
+# Conda-compatible requirements for Galaxy deployment
+# Use this if automatic conda resolution fails
+
+# Core Python
+python>=3.10,<3.11
+
+# Scientific computing (conda-forge channel)
+numpy>=1.24,<1.25
+scipy>=1.11,<1.12
+scikit-image>=0.20,<0.21
+
+# CryoEM specific (bioconda channel)
+mrcfile>=1.5,<1.6
+
+# Visualization
+matplotlib>=3.8,<3.9
+
+# Optional: crYOLO support
+h5py>=3.8,<3.9
+
+# Note: TensorFlow is optional - tool has fallback detection
+# tensorflow>=2.13,<2.16  # Uncomment if you want full crYOLO support
+
+# Installation command for Galaxy admins:
+# conda install -c conda-forge -c bioconda python=3.10 numpy=1.24 scipy=1.11 \
+#   scikit-image=0.20 mrcfile=1.5 matplotlib=3.8 h5py=3.8
