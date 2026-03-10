@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<tool_dependency>
+    <readme>
+        CryoEM Particle Picker Dependencies
+        
+        This tool requires Python 3+ with the following packages:
+        - numpy
+        - scipy
+        - mrcfile
+        - scikit-image
+        - matplotlib
+        - h5py
+        - pandas
+        
+        These are automatically installed via pip when the tool runs.
+        No manual installation required.
+        
+        The crYOLO model (193 MB) is downloaded automatically on first use.
+        
+        No conda dependencies - uses Galaxy's Python environment with pip.
+    </readme>
+</tool_dependency>

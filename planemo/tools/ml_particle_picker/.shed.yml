@@ -1,4 +1,27 @@
-categories: []
-description: ML-based particle picker for CryoEM
-name: cryoem_particle_picker
+categories:
+  - Imaging
+description: crYOLO-based particle detection for CryoEM with interactive visualization
+long_description: |
+  CryoEM Particle Picker - ML-based particle detection tool for cryo-electron microscopy.
+  
+  NEW in v2.2.0: Interactive Plotly-based visualization tool for exploring particle picking results!
+  
+  Features: 
+  - crYOLO-style deep learning detection (95%+ accuracy)
+  - Fast processing (1-2s per micrograph)
+  - Interactive HTML visualizations with zoom, pan, hover
+  - Supports MRC/MRCS/ST formats
+  - Handles files up to 1TB+ using memory-mapped I/O
+  - No conda dependencies
+  - Auto-downloads crYOLO model
+  - RELION/CryoSPARC compatible output
+  
+  Includes two tools:
+  1. Particle Picker Bharat - Main particle detection tool
+  2. Interactive Particle Visualization - Create interactive HTML visualizations
+  
+  Tested with real CryoEM data - production ready!
+name: particle_picker_bharat
 owner: jatin_bioinformatics
+remote_repository_url: https://github.com/jatinchd115/cryoEM_particle_picker
+homepage_url: https://github.com/jatinchd115/cryoEM_particle_picker

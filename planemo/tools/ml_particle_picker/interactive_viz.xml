@@ -1,0 +1,137 @@
+<tool id="particle_picker_interactive_viz" name="Interactive Particle Visualization" version="1.0.2+galaxy3">
+    <description>Create interactive HTML visualization of particle picking results</description>
+
+    <requirements>
+        <!-- No conda requirements - uses Galaxy's Python environment -->
+    </requirements>
+    
+    <command detect_errors="exit_code"><![CDATA[
+        python3 '$__tool_directory__/create_interactive_viz.py'
+            --micrograph '$input_micrograph'
+            --star_file '$input_star'
+            --output '$output_html'
+            --name '${input_micrograph.name}'
+    ]]></command>
+
+    <inputs>
+        <param name="input_micrograph" type="data" format="mrc,mrcs,st,data"
+               label="Input Micrograph"
+               help="Original micrograph file used for particle picking"/>
+
+        <param name="input_star" type="data" format="star,txt"
+               label="STAR File"
+               help="Particle coordinates from Particle Picker Bharat"/>
+    </inputs>
+
+    <outputs>
+        <data name="output_html" format="html"
+              label="${tool.name} on ${on_string}: Interactive Visualization"/>
+    </outputs>
+
+    <tests>
+        <test expect_num_outputs="1">
+            <param name="input_micrograph" value="test_micrograph.mrc"/>
+            <param name="input_star" value="test_coords.star"/>
+            <output name="output_html" file="expected_viz.html" compare="sim_size" delta="10000"/>
+        </test>
+    </tests>
+
+    <help><![CDATA[
+**What it does**
+
+Creates an interactive HTML visualization of CryoEM particle picking results. The visualization allows you to:
+
+- **Zoom and Pan**: Explore the micrograph in detail
+- **Hover**: See particle information (position, confidence)
+- **Interactive Plots**: View confidence distributions and spatial patterns
+- **Export**: Save high-resolution images
+- **Share**: Send HTML file to collaborators
+
+**📊 Visualization Features**
+
+1. **Main Micrograph View**
+   - Particles overlaid on micrograph
+   - Color-coded by confidence (Viridis colormap)
+   - Zoom to inspect individual particles
+   - Hover to see particle details
+
+2. **Confidence Histogram**
+   - Distribution of confidence scores
+   - Identify quality thresholds
+   - Assess overall detection quality
+
+3. **Spatial Analysis**
+   - Confidence vs position scatter plot
+   - Identify spatial patterns
+   - Detect edge effects
+
+**🎯 Use Cases**
+
+- **Quality Control**: Visually inspect particle picking results
+- **Parameter Optimization**: Compare different confidence thresholds
+- **Presentations**: Interactive figures for talks and papers
+- **Collaboration**: Share results with team members
+- **Training**: Teach particle picking concepts
+
+**💡 Tips**
+
+1. **Zoom In**: Use scroll wheel or zoom tools to inspect particles
+2. **Hover**: Move mouse over particles to see details
+3. **Export**: Click camera icon to save high-res PNG
+4. **Share**: HTML file is self-contained and portable
+
+**🔧 Requirements**
+
+- Plotly library (installed automatically)
+- Modern web browser (Chrome, Firefox, Safari, Edge)
+- Internet connection (for Plotly CDN)
+
+**📁 Input Files**
+
+- **Micrograph**: Original MRC/MRCS/ST file
+- **STAR File**: Output from Particle Picker Bharat
+
+**📤 Output**
+
+- **HTML File**: Interactive visualization (open in browser)
+
+**🚨 Troubleshooting**
+
+**Visualization doesn't load?**
+- Check internet connection (needs Plotly CDN)
+- Try different browser
+- Check file size (very large files may be slow)
+
+**Particles not visible?**
+- Check STAR file has data
+- Verify coordinates are within micrograph bounds
+- Try zooming in
+
+**⚙️ Technical Details**
+
+- **Library**: Plotly.js for interactive plots
+- **Format**: Self-contained HTML with embedded data
+- **Size**: Typically 1-5 MB depending on particle count
+- **Compatibility**: Works in all modern browsers
+
+**🔗 Workflow Integration**
+
+Typical workflow:
+1. Run Particle Picker Bharat
+2. Run this tool on the results
+3. Open HTML in browser
+4. Inspect and validate results
+5. Adjust parameters if needed
+6. Re-run picking with optimized settings
+
+**📚 Related Tools**
+
+- Particle Picker Bharat: Main particle picking tool
+- RELION: Downstream 3D reconstruction
+- CryoSPARC: Alternative reconstruction software
+    ]]></help>
+
+    <citations>
+        <citation type="doi">10.1016/j.jsb.2023.107850</citation>
+    </citations>
+</tool>

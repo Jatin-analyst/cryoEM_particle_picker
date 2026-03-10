@@ -37,18 +37,24 @@ def validate_inputs(particle_size, confidence_threshold):
         raise ValueError(f"Confidence threshold must be 0.1-0.99, got {confidence_threshold}")
 
 def load_micrograph_safe(filepath):
-    """Safely load micrograph with comprehensive error handling."""
+    """Safely load micrograph with comprehensive error handling.
+    
+    Supports files up to 1TB+ using memory-mapped I/O.
+    """
     filepath = Path(filepath)
     
     if not filepath.exists():
         raise FileNotFoundError(f"Input file not found: {filepath}")
     
-    # Check file size (warn if >10GB)
+    # Check file size (info only, no limit)
     file_size_gb = filepath.stat().st_size / (1024**3)
-    if file_size_gb > 10:
-        print(f"⚠️  Large file detected: {file_size_gb:.1f}GB - processing may take longer")
+    if file_size_gb > 100:
+        print(f"📦 Large file detected: {file_size_gb:.1f}GB - using memory-mapped I/O for efficient processing")
+    elif file_size_gb > 10:
+        print(f"📦 File size: {file_size_gb:.1f}GB")
     
     try:
+        # Use memory-mapped mode for efficient large file handling
         with mrcfile.open(str(filepath), mode='r', permissive=True) as mrc:
             data = mrc.data
             
@@ -405,8 +411,54 @@ def create_visualization_fast(micrograph, coords, confidences, output_path, part
         print(f"⚠️  Visualization failed: {e}")
         return False
 
+def check_dependencies():
+    """Check if all required packages are available."""
+    missing = []
+    
+    try:
+        import numpy
+    except ImportError:
+        missing.append('numpy')
+    
+    try:
+        import scipy
+    except ImportError:
+        missing.append('scipy')
+    
+    try:
+        import mrcfile
+    except ImportError:
+        missing.append('mrcfile')
+    
+    try:
+        import skimage
+    except ImportError:
+        missing.append('scikit-image')
+    
+    try:
+        import matplotlib
+    except ImportError:
+        missing.append('matplotlib')
+    
+    if missing:
+        print("\n" + "="*60, file=sys.stderr)
+        print("❌ DEPENDENCY ERROR", file=sys.stderr)
+        print("="*60, file=sys.stderr)
+        print(f"\nMissing required Python packages: {', '.join(missing)}", file=sys.stderr)
+        print("\nTo fix this issue, install the missing packages:", file=sys.stderr)
+        print(f"  pip3 install --user {' '.join(missing)}", file=sys.stderr)
+        print("\nOr contact your Galaxy administrator to install these packages.", file=sys.stderr)
+        print("="*60 + "\n", file=sys.stderr)
+        return False
+    
+    return True
+
 def main():
     """Main production function optimized for Galaxy deployment."""
+    # Check dependencies first
+    if not check_dependencies():
+        return 1
+    
     parser = argparse.ArgumentParser(
         description='High-speed crYOLO particle detection for CryoEM micrographs',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter

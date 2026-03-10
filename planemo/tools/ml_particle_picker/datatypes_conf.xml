@@ -27,6 +27,14 @@
                   mimetype="text/plain" 
                   display_in_upload="true"
                   description="STAR format - RELION/CryoSPARC particle coordinates"/>
+        
+        <!-- Image output formats -->
+        <!-- PNG format for visualization outputs (heatmaps, statistics plots) -->
+        <datatype extension="png" 
+                  type="galaxy.datatypes.images:Image" 
+                  mimetype="image/png" 
+                  display_in_upload="true"
+                  description="PNG format - Portable Network Graphics image"/>
     </registration>
     
     <sniffers>
