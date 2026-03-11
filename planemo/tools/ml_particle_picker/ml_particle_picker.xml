@@ -1,6 +1,6 @@
 <!-- tools/ml_particle_picker/ml_particle_picker.xml -->
 
-<tool id="particle_picker_bharat" name="Particle Picker Bharat" version="3.0.0+galaxy11">
+<tool id="particle_picker_bharat" name="Particle Picker Bharat" version="3.0.0+galaxy12">
     <description>CryoTransformer-based particle detection for CryoEM micrographs with state-of-the-art accuracy</description>
 
     <requirements>

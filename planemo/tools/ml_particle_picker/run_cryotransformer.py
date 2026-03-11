@@ -25,16 +25,43 @@ logger = setup_logging()
 def setup_model_paths():
     """Setup paths to bundled model files."""
     # Model files are bundled with the tool
-    script_dir = Path(__file__).parent
-    model_dir = script_dir.parent.parent.parent / "pretrained_model"
-    lib_dir = script_dir.parent.parent.parent / "lib"
+    script_dir = Path(__file__).parent.resolve()
     
-    # Check if model files exist
+    # Try multiple possible locations for model and lib directories
+    # Location 1: Tool Shed structure (planemo/tools/ml_particle_picker/)
+    model_dir_1 = script_dir.parent.parent.parent / "pretrained_model"
+    lib_dir_1 = script_dir.parent.parent.parent / "lib"
+    
+    # Location 2: Galaxy tool directory (flat structure)
+    model_dir_2 = script_dir / "pretrained_model"
+    lib_dir_2 = script_dir / "lib"
+    
+    # Location 3: Parent directory
+    model_dir_3 = script_dir.parent / "pretrained_model"
+    lib_dir_3 = script_dir.parent / "lib"
+    
+    # Check which location exists
+    model_dir = None
+    lib_dir = None
+    
+    for md, ld in [(model_dir_1, lib_dir_1), (model_dir_2, lib_dir_2), (model_dir_3, lib_dir_3)]:
+        main_model = md / "CryoTransformer_pretrained_model.pth"
+        model_imp = ld / "model_imp_file"
+        if main_model.exists() and model_imp.exists():
+            model_dir = md
+            lib_dir = ld
+            break
+    
+    if model_dir is None or lib_dir is None:
+        logger.error(f"❌ Could not find model or lib directory")
+        logger.error(f"Script directory: {script_dir}")
+        logger.error(f"Tried locations:")
+        logger.error(f"  1. {model_dir_1} / {lib_dir_1}")
+        logger.error(f"  2. {model_dir_2} / {lib_dir_2}")
+        logger.error(f"  3. {model_dir_3} / {lib_dir_3}")
+        raise FileNotFoundError(f"CryoTransformer model and lib directories not found")
+    
     main_model = model_dir / "CryoTransformer_pretrained_model.pth"
-    
-    if not main_model.exists():
-        raise FileNotFoundError(f"CryoTransformer model not found: {main_model}")
-    
     logger.info(f"✅ Using bundled CryoTransformer model: {main_model}")
     logger.info(f"✅ Model architecture from: {lib_dir / 'model_imp_file'}")
     
@@ -363,15 +390,28 @@ def main():
         logger.info(f"Input: {args.input}")
         logger.info(f"Particle size: {args.particle_size}px")
         logger.info(f"Confidence threshold: {args.confidence_threshold}")
+        logger.info(f"Script location: {Path(__file__).resolve()}")
+        logger.info(f"Working directory: {Path.cwd()}")
         
         # Check dependencies
+        logger.info("Checking dependencies...")
         if not check_dependencies():
+            logger.error("❌ Dependency check failed")
             return 1
+        logger.info("✅ All dependencies available")
         
         # Setup model paths
-        model_dir, lib_dir = setup_model_paths()
+        logger.info("Setting up model paths...")
+        try:
+            model_dir, lib_dir = setup_model_paths()
+        except Exception as e:
+            logger.error(f"❌ Failed to setup model paths: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            return 1
         
         # Run prediction
+        logger.info("Starting prediction...")
         num_particles = run_cryotransformer_prediction(
             args.input,
             args.output,
