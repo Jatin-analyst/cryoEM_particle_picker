@@ -1,9 +1,0 @@
-categories:
-- Imaging
-- Machine Learning
-description: ML based particle picker for CryoEM micrographs using YOLOv8n
-homepage_url: https://github.com/Jatin-analyst/cryoEM_particle_picker
-long_description: Automated particle detection in CryoEM micrographs using YOLOv8n
-  deep learning model. Supports .mrc, .mrcs, .st file formats.
-name: cryoem_particle_picker
-owner: jatin_bioinformatics
